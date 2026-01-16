@@ -1,4 +1,3 @@
- # NEW*SPIN
 <html lang="uk">
 <head>
 <meta charset="UTF-8">

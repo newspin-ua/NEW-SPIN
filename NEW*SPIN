@@ -1,1 +1,81 @@
-/////////////
+<script><!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>🎁 PROCASE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  body {
+    background: radial-gradient(circle at top, #0b0b0b, #121212);
+    color: #fff;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  h1 {
+    font-size: 40px;
+    color: #00c3ff;
+    text-shadow: 0 0 10px #00c3ff;
+    margin-bottom: 20px;
+  }
+  button {
+    background: linear-gradient(90deg, #0077ff, #00c3ff);
+    border: none;
+    border-radius: 15px;
+    color: white;
+    padding: 15px 40px;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 0 20px #00c3ff;
+    transition: transform 0.2s;
+  }
+  button:active { transform: scale(0.95); }
+</style>
+</head>
+<body>
+
+<h1>🎁 PROCASE</h1>
+<button id="openBtn">Відкрити кейс</button>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand(); // розгорнути WebApp на весь екран
+
+document.getElementById("openBtn").addEventListener("click", function() {
+    const url = "https://youtube.com/@zcy11k?si=JZcsbRyX374f49pK";
+
+    // Якщо WebApp Telegram підтримує відкриття посилання
+    if (tg.openLink) {
+        tg.openLink(url);
+    } else {
+        // Запасний варіант для звичайного браузера
+        window.open(url, "_blank");
+    }
+});
+</script>
+
+</body>
+</html>
+const tg = window.Telegram.WebApp;
+tg.expand(); // розгорнути WebApp на весь екран
+
+document.getElementById("openBtn").addEventListener("click", function() {
+    const url = "https://t.me/pro48k_bs";
+
+    // Якщо WebApp Telegram підтримує відкриття посилання
+    if (tg.openLink) {
+        tg.openLink(url);
+    } else {
+        // Запасний варіант для звичайного браузера
+        window.open(url, "_blank");
+    }
+});
+</script>
+
+</body>
+</html>

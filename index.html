@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>🎁 PROCASE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+body {
+  background: radial-gradient(circle at top, #0b0b0b, #121212);
+  color: #fff;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+h1 {
+  font-size: 40px;
+  color: #00c3ff;
+  text-shadow: 0 0 10px #00c3ff;
+  margin-bottom: 20px;
+}
+#wheel {
+  width: 200px;
+  height: 200px;
+  border: 10px solid #00c3ff;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 50px;
+  font-weight: bold;
+  text-align: center;
+}
+button {
+  background: linear-gradient(90deg, #0077ff, #00c3ff);
+  border: none;
+  border-radius: 15px;
+  color: white;
+  padding: 15px 40px;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 0 20px #00c3ff;
+  margin-top: 30px;
+}
+button:active { transform: scale(0.95); }
+.result {
+  margin-top: 20px;
+  font-size: 26px;
+  text-shadow: 0 0 15px #00ffcc;
+  min-height: 50px;
+}
+</style>
+</head>
+<body>
+
+<h1>🎁 PROCASE</h1>
+<div id="wheel">🎡</div>
+<button id="openBtn">Відкрити кейс</button>
+<div class="result" id="result"></div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+const wheel = document.getElementById("wheel");
+const resultEl = document.getElementById("result");
+
+document.getElementById("openBtn").addEventListener("click", function() {
+    resultEl.innerHTML = "";
+
+    // 1. Скидаємо обертання
+    wheel.style.transition = 'none';
+    wheel.style.transform = 'rotate(0deg)';
+
+    // невеликий таймаут, щоб браузер застосував reset
+    setTimeout(() => {
+        const spins = 5; // повних обертів
+        const randomDeg = Math.floor(Math.random() * 360);
+        const totalDeg = spins * 360 + randomDeg;
+
+        wheel.style.transition = 'transform 4s cubic-bezier(0.33, 1, 0.68, 1)';
+        wheel.style.transform = rotate(${totalDeg}deg);
+
+        // показати результат після обертання
+        setTimeout(() => {
+            const roll = Math.random();
+            if (roll <= 0.01) {
+                const gift = Math.floor(Math.random() * (25 - 15 + 1)) + 15;
+                resultEl.innerHTML = 🎉 Вітаємо! Подарунок на <b>${gift}⭐️</b>!;
+            } else {
+                const stars = Math.floor(Math.random() * 2);
+                resultEl.innerHTML = stars > 0
+                    ? ⭐️ Тобі випала <b>${stars}</b> зірка!
+                    : "😢 Нічого не випало...";
+            }
+
+            // відкриваємо YouTube
+            const url = "https://youtube.com/@zcy11k?si=JZcsbRyX374f49pK";
+            if (tg.openLink) tg.openLink(url);
+            else window.open(url, "_blank");
+
+        }, 4000); // кінець анімації
+    }, 50);
+});
+</script>
+
+</body>
+</html>

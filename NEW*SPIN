@@ -1,53 +1,205 @@
+<!DOCTYPE html>
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
 <title>🎁 PROCASE</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="viewport"
+content="width=device-width,
+initial-scale=1,
+maximum-scale=1,
+user-scalable=no,
+viewport-fit=cover">
+
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
 <style>
-  body {
-    background: radial-gradient(circle at top, #0b0b0b, #121212);
-    color: #fff;
-    font-family: 'Arial', sans-serif;
-    text-align: center;
-    padding-top: 100px;
-  }
-  h1 { font-size: 40px; color: #00c3ff; text-shadow: 0 0 10px #00c3ff; }
-  button {
-    background: linear-gradient(90deg, #0077ff, #00c3ff);
-    border: none; border-radius: 15px;
-    color: white; padding: 15px 40px;
-    font-size: 20px; cursor: pointer;
-    box-shadow: 0 0 20px #00c3ff;
-    transition: transform 0.1s;
-  }
-  button:active { transform: scale(0.95); }
-  .result { margin-top: 40px; font-size: 26px; text-shadow: 0 0 15px #00ffcc; }
+:root {
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding-top: calc(20px + var(--safe-top));
+  padding-bottom: calc(20px + var(--safe-bottom));
+  background:
+    radial-gradient(circle at top, #0b1d2a, #050505 65%),
+    radial-gradient(circle at bottom, #001018, #000);
+  color: #fff;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  overflow-x: hidden;
+}
+
+h1 {
+  font-size: clamp(28px, 6vw, 40px);
+  color: #00c3ff;
+  text-shadow: 0 0 15px #00c3ff;
+  margin-bottom: 10px;
+}
+
+#wheelWrapper {
+  width: min(85vw, 340px);
+  margin: 10px auto;
+  filter: drop-shadow(0 25px 40px rgba(0,0,0,0.8));
+}
+
+canvas {
+  width: 100%;
+  height: auto;
+  border-radius: 50%;
+  background: radial-gradient(circle, #222, #000);
+  box-shadow:
+    inset 0 0 25px rgba(255,255,255,0.15),
+    0 0 35px #00c3ff;
+}
+
+#pointer {
+  margin: 8px auto;
+  width: 0;
+  height: 0;
+  border-left: 18px solid transparent;
+  border-right: 18px solid transparent;
+  border-bottom: 36px solid #00eaff;
+  filter: drop-shadow(0 0 15px #00eaff);
+}
+
+button {
+  margin-top: 10px;
+  background: linear-gradient(90deg, #0077ff, #00c3ff);
+  border: none;
+  border-radius: 16px;
+  color: white;
+  padding: 14px 38px;
+  font-size: clamp(16px, 4.5vw, 20px);
+  cursor: pointer;
+  box-shadow: 0 0 25px #00c3ff;
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+.result {
+  margin-top: 18px;
+  font-size: clamp(20px, 5vw, 28px);
+  text-shadow: 0 0 20px #00ffcc;
+}
 </style>
 </head>
+
 <body>
+
 <h1>🎁 PROCASE</h1>
-<p>Натисни кнопку, щоб відкрити кейс!</p>
-<button onclick="openCase()">Відкрити кейс</button>
+
+<div id="wheelWrapper">
+  <canvas id="wheelCanvas" width="340" height="340"></canvas>
+</div>
+
+<div id="pointer"></div>
+
+<button id="spinBtn">Крутити</button>
 <div class="result" id="result"></div>
-
+<audio id="spinSound" loop src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_9b3c8c77b5.mp3"></audio>
+<audio id="winSound"  src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_4f92b7c9b3.mp3"></audio>
+<audio id="loseSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_3b7b2d8f6b.mp3"></audio>
 <script>
-function openCase() {
-  const resultEl = document.getElementById("result");
-  const roll = Math.random();
+Telegram.WebApp.ready();
+Telegram.WebApp.expand();
 
-  if (roll <= 0.01) {
-    const gift = Math.floor(Math.random() * (25 - 15 + 1)) + 15;
-    resultEl.innerHTML = 🎉 Вітаємо! Тобі випав <b>подарунок Telegram</b> на ${gift}⭐!;
-    Telegram.WebApp.sendData(gift:${gift});
-  } else {
-    const stars = Math.floor(Math.random() * 2);
-    resultEl.innerHTML = stars > 0
-      ? ⭐ Тобі випала <b>${stars}</b> зірка!
-      : 😢 Нічого не випало цього разу...;
-    Telegram.WebApp.sendData(stars:${stars});
+const canvas = document.getElementById("wheelCanvas");
+const ctx = canvas.getContext("2d");
+const spinBtn = document.getElementById("spinBtn");
+const resultEl = document.getElementById("result");
+
+const spinSound = document.getElementById("spinSound");
+const winSound = document.getElementById("winSound");
+const loseSound = document.getElementById("loseSound");
+
+// 10 секторів
+const segments = Array.from({length:10}, (_,i)=>({
+  color: i % 2 === 0 ? "#3cff00" : "#ff2a2a",
+  win: i % 2 === 0
+}));
+
+let angle = 0;
+const count = segments.length;
+
+function drawWheel() {
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const r = canvas.width / 2 - 18;
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  for (let i=0;i<count;i++){
+    const s = angle + i * 2*Math.PI/count;
+    const e = s + 2*Math.PI/count;
+
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,s,e);
+    ctx.fillStyle = segments[i].color;
+    ctx.fill();
   }
+
+  // жовті лампочки
+  for (let i=0;i<24;i++){
+    const a = i*2*Math.PI/24;
+    const x = cx + Math.cos(a)*(r+7);
+    const y = cy + Math.sin(a)*(r+7);
+    ctx.beginPath();
+    ctx.arc(x,y,4.5,0,2*Math.PI);
+    ctx.fillStyle="#FFD700";
+    ctx.shadowBlur=10;
+    ctx.shadowColor="#FFD700";
+    ctx.fill();
+  }
+  ctx.shadowBlur=0;
 }
+
+drawWheel();
+
+spinBtn.onclick = ()=>{
+  resultEl.textContent="";
+  spinSound.currentTime=0;
+  spinSound.play();
+
+  const spin = Math.random()*360 + 1440;
+  const start = performance.now();
+  const startAngle = angle;
+  const duration = 3500;
+
+  function anim(t){
+    const p = Math.min((t-start)/duration,1);
+    const ease = 1 - Math.pow(1-p,3);
+    angle = startAngle + spin*Math.PI/180*ease;
+    drawWheel();
+
+    if(p<1) requestAnimationFrame(anim);
+    else{
+      spinSound.pause();
+      const final = angle%(2*Math.PI);
+      const size = 2*Math.PI/count;
+      const idx = Math.floor((2*Math.PI-final)/size)%count;
+      const win = segments[idx].win;
+
+      resultEl.textContent = win ? "🎉 ВИГРАШ!" : "😢 НЕ ВИГРАШ";
+      win ? winSound.play() : loseSound.play();
+
+      Telegram.WebApp.sendData(JSON.stringify({result: win?"win":"lose"}));
+    }
+  }
+  requestAnimationFrame(anim);
+};
 </script>
+
 </body>
 </html>

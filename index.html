@@ -1,205 +1,204 @@
-<!DOCTYPE html>
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
 <title>🎁 PROCASE</title>
-
-<meta name="viewport"
-content="width=device-width,
-initial-scale=1,
-maximum-scale=1,
-user-scalable=no,
-viewport-fit=cover">
-
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
 <style>
-:root {
-  --safe-top: env(safe-area-inset-top);
-  --safe-bottom: env(safe-area-inset-bottom);
-}
-
-* {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
 body {
-  margin: 0;
-  min-height: 100vh;
-  padding-top: calc(20px + var(--safe-top));
-  padding-bottom: calc(20px + var(--safe-bottom));
-  background:
-    radial-gradient(circle at top, #0b1d2a, #050505 65%),
-    radial-gradient(circle at bottom, #001018, #000);
-  color: #fff;
-  font-family: Arial, sans-serif;
-  text-align: center;
-  overflow-x: hidden;
+  margin:0;
+  background:radial-gradient(circle at top,#0b1d2a,#050505);
+  color:#fff;
+  font-family:Arial,sans-serif;
+  text-align:center;
 }
-
 h1 {
-  font-size: clamp(28px, 6vw, 40px);
-  color: #00c3ff;
-  text-shadow: 0 0 15px #00c3ff;
-  margin-bottom: 10px;
+  color:#00c3ff;
+  text-shadow:0 0 15px #00c3ff;
 }
-
-#wheelWrapper {
-  width: min(85vw, 340px);
-  margin: 10px auto;
-  filter: drop-shadow(0 25px 40px rgba(0,0,0,0.8));
-}
-
 canvas {
-  width: 100%;
-  height: auto;
-  border-radius: 50%;
-  background: radial-gradient(circle, #222, #000);
-  box-shadow:
-    inset 0 0 25px rgba(255,255,255,0.15),
-    0 0 35px #00c3ff;
+  width:85vw;
+  max-width:340px;
+  border-radius:50%;
+  background:#000;
+  box-shadow:0 0 35px #00c3ff;
 }
-
 #pointer {
-  margin: 8px auto;
-  width: 0;
-  height: 0;
-  border-left: 18px solid transparent;
-  border-right: 18px solid transparent;
-  border-bottom: 36px solid #00eaff;
-  filter: drop-shadow(0 0 15px #00eaff);
+  margin:8px auto;
+  width:0;
+  height:0;
+  border-left:18px solid transparent;
+  border-right:18px solid transparent;
+  border-bottom:36px solid #00eaff;
 }
-
 button {
-  margin-top: 10px;
-  background: linear-gradient(90deg, #0077ff, #00c3ff);
-  border: none;
-  border-radius: 16px;
-  color: white;
-  padding: 14px 38px;
-  font-size: clamp(16px, 4.5vw, 20px);
-  cursor: pointer;
-  box-shadow: 0 0 25px #00c3ff;
+  background:linear-gradient(90deg,#0077ff,#00c3ff);
+  border:none;
+  border-radius:16px;
+  color:white;
+  padding:14px 38px;
+  font-size:18px;
+  box-shadow:0 0 25px #00c3ff;
 }
-
-button:active {
-  transform: scale(0.96);
-}
-
 .result {
-  margin-top: 18px;
-  font-size: clamp(20px, 5vw, 28px);
-  text-shadow: 0 0 20px #00ffcc;
+  font-size:26px;
+  margin-top:14px;
+}
+.chanceBox {
+  margin-top:12px;
+  background:rgba(0,0,0,.5);
+  display:inline-block;
+  padding:10px 18px;
+  border-radius:14px;
+}
+.chance.green{color:#3cff00}
+.chance.red{color:#ff2a2a}
+.chance.gray{color:#bfbfbf}
+.star {
+  position:fixed;
+  font-size:28px;
+  pointer-events:none;
+  animation:fly 1.6s ease-out forwards;
+}
+@keyframes fly {
+  from {opacity:1;transform:scale(.4)}
+  to {opacity:0;transform:scale(1.4) translate(var(--x),var(--y)) rotate(360deg);}
 }
 </style>
 </head>
-
 <body>
-
 <h1>🎁 PROCASE</h1>
-
-<div id="wheelWrapper">
-  <canvas id="wheelCanvas" width="340" height="340"></canvas>
+<canvas id="wheel" width="340" height="340"></canvas>
+<div id="pointer"></div>
+<button id="spin">Крутити</button>
+<div class="result" id="result"></div>
+<div class="chanceBox">
+  <div class="chance green">⭐️ 1 — 24%</div>
+  <div class="chance red"> 0 — 75.99%</div>
+  <div class="chance gray">⭐️⭐️⭐️ 3 — 0.01%</div>
 </div>
 
-<div id="pointer"></div>
-
-<button id="spinBtn">Крутити</button>
-<div class="result" id="result"></div>
-<audio id="spinSound" loop src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_9b3c8c77b5.mp3"></audio>
-<audio id="winSound"  src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_4f92b7c9b3.mp3"></audio>
-<audio id="loseSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_3b7b2d8f6b.mp3"></audio>
 <script>
 Telegram.WebApp.ready();
 Telegram.WebApp.expand();
 
-const canvas = document.getElementById("wheelCanvas");
+const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
-const spinBtn = document.getElementById("spinBtn");
-const resultEl = document.getElementById("result");
+const result = document.getElementById("result");
 
-const spinSound = document.getElementById("spinSound");
-const winSound = document.getElementById("winSound");
-const loseSound = document.getElementById("loseSound");
-
-// 10 секторів
-const segments = Array.from({length:10}, (_,i)=>({
-  color: i % 2 === 0 ? "#3cff00" : "#ff2a2a",
-  win: i % 2 === 0
-}));
+const segments = [
+  {color:"#3cff00", text:"⭐️", type:"one", size:1},
+  {color:"#ff2a2a", text:"", type:"zero", size:1},
+  {color:"#3cff00", text:"⭐️", type:"one", size:1},
+  {color:"#ff2a2a", text:"", type:"zero", size:1},
+  {color:"#3cff00", text:"⭐️", type:"one", size:1},
+  {color:"#ff2a2a", text:"", type:"zero", size:1},
+  {color:"#3cff00", text:"⭐️", type:"one", size:1},
+  {color:"#ff2a2a", text:"", type:"zero", size:1},
+  {color:"#3cff00", text:"⭐️", type:"one", size:1},
+  {color:"#ff2a2a", text:"", type:"zero", size:1},
+  {color:"#dfdfdf", text:"⭐️⭐️⭐️", type:"three", size:0.5},
+];
 
 let angle = 0;
-const count = segments.length;
 
 function drawWheel() {
-  const cx = canvas.width / 2;
-  const cy = canvas.height / 2;
-  const r = canvas.width / 2 - 18;
+  const cx = 170, cy = 170, r = 155;
+  const total = segments.reduce((s,a)=>s+a.size,0);
+  let a = angle;
 
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.clearRect(0,0,340,340);
 
-  for (let i=0;i<count;i++){
-    const s = angle + i * 2*Math.PI/count;
-    const e = s + 2*Math.PI/count;
-
+  // Малюємо сегменти
+  segments.forEach(s=>{
+    const slice = (s.size/total)*Math.PI*2;
     ctx.beginPath();
     ctx.moveTo(cx,cy);
-    ctx.arc(cx,cy,r,s,e);
-    ctx.fillStyle = segments[i].color;
+    ctx.arc(cx,cy,r,a,a+slice);
+    ctx.fillStyle=s.color;
     ctx.fill();
-  }
 
-  // жовті лампочки
-  for (let i=0;i<24;i++){
-    const a = i*2*Math.PI/24;
-    const x = cx + Math.cos(a)*(r+7);
-    const y = cy + Math.sin(a)*(r+7);
+    // Текст на сегменті
+    const mid = a+slice/2;
+    ctx.save();
+    ctx.translate(cx+Math.cos(mid)*r*0.6, cy+Math.sin(mid)*r*0.6);
+    ctx.rotate(mid);
+    ctx.fillStyle="#fff";
+    ctx.font="bold 20px Arial";
+    ctx.fillText(s.text,-12,6);
+    ctx.restore();
+
+    a+=slice;
+  });
+
+  // Малюємо жовті кружечки по колу
+  const bulbs = 20; // кількість лампочок
+  for(let i=0;i<bulbs;i++){
+    const theta = (i/bulbs)*2*Math.PI + angle; // щоб кружечки обертались разом
+    const bx = cx + Math.cos(theta)*(r+15);
+    const by = cy + Math.sin(theta)*(r+15);
     ctx.beginPath();
-    ctx.arc(x,y,4.5,0,2*Math.PI);
-    ctx.fillStyle="#FFD700";
-    ctx.shadowBlur=10;
-    ctx.shadowColor="#FFD700";
+    ctx.arc(bx,by,6,0,2*Math.PI);
+    ctx.fillStyle = "#ffea00";
+    ctx.shadowColor = "#ffd700";
+    ctx.shadowBlur = 8;
     ctx.fill();
+    ctx.shadowBlur = 0;
   }
-  ctx.shadowBlur=0;
+}
+
+function explode(n){
+  for(let i=0;i<n;i++){
+    const s=document.createElement("div");
+    s.className="star";
+    s.textContent="⭐️";
+    s.style.left="50%";
+    s.style.top="50%";
+    s.style.setProperty("--x",(Math.random()-.5)*300+"px");
+    s.style.setProperty("--y",(Math.random()-.5)*300+"px");
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),1600);
+  }
 }
 
 drawWheel();
 
-spinBtn.onclick = ()=>{
-  resultEl.textContent="";
-  spinSound.currentTime=0;
-  spinSound.play();
+document.getElementById("spin").onclick=()=>{
+  let r=Math.random(), type="zero";
+  if(r<0.0001) type="three";
+  else if(r<0.24) type="one";
 
-  const spin = Math.random()*360 + 1440;
-  const start = performance.now();
-  const startAngle = angle;
-  const duration = 3500;
+  const opts=segments.map((s,i)=>({...s,i})).filter(s=>s.type===type);
+  const pick=opts[Math.floor(Math.random()*opts.length)];
+
+  const total=segments.reduce((s,a)=>s+a.size,0);
+  let offset=0;
+  for(let i=0;i<pick.i;i++) offset+=segments[i].size;
+  const target=(offset/total)*Math.PI*2;
+
+  const spin=6*Math.PI+(Math.PI*2-target);
+  const start=angle;
+  const t0=performance.now();
 
   function anim(t){
-    const p = Math.min((t-start)/duration,1);
-    const ease = 1 - Math.pow(1-p,3);
-    angle = startAngle + spin*Math.PI/180*ease;
+    const p=Math.min((t-t0)/3500,1);
+    angle=start+spin*(1-Math.pow(1-p,3));
     drawWheel();
-
     if(p<1) requestAnimationFrame(anim);
     else{
-      spinSound.pause();
-      const final = angle%(2*Math.PI);
-      const size = 2*Math.PI/count;
-      const idx = Math.floor((2*Math.PI-final)/size)%count;
-      const win = segments[idx].win;
-
-      resultEl.textContent = win ? "🎉 ВИГРАШ!" : "😢 НЕ ВИГРАШ";
-      win ? winSound.play() : loseSound.play();
-
-      Telegram.WebApp.sendData(JSON.stringify({result: win?"win":"lose"}));
+      if(type==="three"){
+        result.textContent="💎 ⭐️⭐️⭐️ 3 ЗІРКИ!";
+        explode(30);
+      } else if(type==="one"){
+        result.textContent="🎉 ⭐️ 1 ЗІРКА";
+        explode(14);
+      } else {
+        result.textContent="😢  0 ЗІРОК";
+      }
     }
   }
   requestAnimationFrame(anim);
 };
 </script>
-
 </body>
 </html>

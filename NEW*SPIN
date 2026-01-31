@@ -1,204 +1,218 @@
+<!DOCTYPE html>
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<title>🎁 PROCASE</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐔 Neon Chicken Clicker</title>
 <style>
-body {
+body{
   margin:0;
-  background:radial-gradient(circle at top,#0b1d2a,#050505);
-  color:#fff;
   font-family:Arial,sans-serif;
+  background:#111;
+  color:#0fa;
   text-align:center;
 }
-h1 {
-  color:#00c3ff;
-  text-shadow:0 0 15px #00c3ff;
+.neon-text{
+  font-weight:bold;
+  text-shadow:0 0 5px #0ff,0 0 10px #f0f;
 }
-canvas {
-  width:85vw;
-  max-width:340px;
-  border-radius:50%;
-  background:#000;
-  box-shadow:0 0 35px #00c3ff;
+header{
+  display:flex;
+  justify-content:center;
+  background:#222;
 }
-#pointer {
-  margin:8px auto;
-  width:0;
-  height:0;
-  border-left:18px solid transparent;
-  border-right:18px solid transparent;
-  border-bottom:36px solid #00eaff;
-}
-button {
-  background:linear-gradient(90deg,#0077ff,#00c3ff);
+header button{
+  margin:5px;
+  padding:10px 20px;
   border:none;
-  border-radius:16px;
-  color:white;
-  padding:14px 38px;
-  font-size:18px;
-  box-shadow:0 0 25px #00c3ff;
+  border-radius:10px;
+  font-weight:bold;
+  color:#0ff;
+  background:#333;
+  cursor:pointer;
+  transition:0.3s;
 }
-.result {
-  font-size:26px;
-  margin-top:14px;
+header button:hover{background:#0fa; color:#000;}
+.screen{display:none;padding:20px;}
+.active{display:block;}
+#chicken-img{
+  width:200px;
+  cursor:pointer;
+  transition:0.1s;
+  display:block;
+  margin:30px auto;
+  border-radius:50%;
+  box-shadow:0 0 10px #0ff,0 0 20px #0ff,0 0 40px #0ff;
 }
-.chanceBox {
-  margin-top:12px;
-  background:rgba(0,0,0,.5);
-  display:inline-block;
-  padding:10px 18px;
-  border-radius:14px;
+#chicken-img:active{transform:scale(0.9);}
+.bar{
+  width:80%;height:20px;background:#333;margin:10px auto;border-radius:10px;overflow:hidden;
 }
-.chance.green{color:#3cff00}
-.chance.red{color:#ff2a2a}
-.chance.gray{color:#bfbfbf}
-.star {
-  position:fixed;
-  font-size:28px;
-  pointer-events:none;
-  animation:fly 1.6s ease-out forwards;
+.bar div{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#00ffcc,#00ffaa);
+  transition:width .3s;
 }
-@keyframes fly {
-  from {opacity:1;transform:scale(.4)}
-  to {opacity:0;transform:scale(1.4) translate(var(--x),var(--y)) rotate(360deg);}
+.item-box{
+  border:1px solid #444;padding:10px;margin:8px auto;
+  background:#1a1a1a;border-radius:8px;
+  display:flex;justify-content:space-between;align-items:center;
+  max-width:400px;
+}
+.buy-btn{
+  background:#0fa;border:none;padding:5px 10px;font-weight:bold;border-radius:6px;color:#000;cursor:pointer;
 }
 </style>
 </head>
 <body>
-<h1>🎁 PROCASE</h1>
-<canvas id="wheel" width="340" height="340"></canvas>
-<div id="pointer"></div>
-<button id="spin">Крутити</button>
-<div class="result" id="result"></div>
-<div class="chanceBox">
-  <div class="chance green">⭐️ 1 — 24%</div>
-  <div class="chance red"> 0 — 75.99%</div>
-  <div class="chance gray">⭐️⭐️⭐️ 3 — 0.01%</div>
+
+<header>
+<button onclick="show('main')">Головна</button>
+<button onclick="show('shop')">Магазин</button>
+<button onclick="show('cases')">Кейси</button>
+<button onclick="show('inv')">Рюкзак</button>
+<button onclick="show('profile')">Профіль</button>
+</header>
+
+<!-- MAIN -->
+<div id="main" class="screen active">
+  <img id="chicken-img" src="https://img.icons8.com/color/200/chicken.png" onclick="clickChicken()">
+  <p class="neon-text">💰 Коїни: <span id="coins">0</span></p>
+  <p class="neon-text">⭐️ Рівень: <span id="level">0</span> / 20000</p>
+  <div class="bar"><div id="xpBar"></div></div>
+  <p class="neon-text">XP: <span id="xp">0</span> / 100</p>
+</div>
+
+<!-- SHOP -->
+<div id="shop" class="screen">
+<h2 class="neon-text">🛒 Магазин</h2>
+<div class="item-box"><span class="neon-text">💣 Бомба (150 🪙)</span><button class="buy-btn" onclick="buyItem('💣 Бомба',150)">КУПИТИ</button></div>
+<div class="item-box"><span class="neon-text">🔪 Ніж (500 🪙)</span><button class="buy-btn" onclick="buyItem('🔪 Ніж',500)">КУПИТИ</button></div>
+<div class="item-box"><span class="neon-text">🪓 Сокира (3000 🪙)</span><button class="buy-btn" onclick="buyItem('🪓 Сокира',3000)">КУПИТИ</button></div>
+<div class="item-box"><span class="neon-text">🔫 Пістолет (7000 🪙)</span><button class="buy-btn" onclick="buyItem('🔫 Пістолет',7000)">КУПИТИ</button></div>
+<div class="item-box"><span class="neon-text">🧨 Динаміт (15000 🪙)</span><button class="buy-btn" onclick="buyItem('🧨 Динаміт',15000)">КУПИТИ</button></div>
+<div class="item-box"><span class="neon-text">⚔️ Меч (40000 🪙)</span><button class="buy-btn" onclick="buyItem('⚔️ Меч',40000)">КУПИТИ</button></div>
+<div class="item-box"><span class="neон-text">🔥 Вогнемет (100000 🪙)</span><button class="buy-btn" onclick="buyItem('🔥 Вогнемет',100000)">КУПИТИ</button></div>
+<div class="item-box"><span class="neon-text">🤖 Автоклікер (10000 🪙)</span><button class="buy-btn" onclick="buyAutoclicker()">КУПИТИ</button></div>
+<div class="item-box"><span class="neon-text">⚡️ Апгрейд кліка (+1) (<span id="click-upgrade-price">5000</span> 🪙)</span><button class="buy-btn" onclick="upgradeClick()">КУПИТИ</button></div>
+</div>
+
+<!-- CASES -->
+<div id="cases" class="screen">
+<h2 class="neon-text">🎁 Кейси</h2>
+<div class="item-box"><span class="neon-text"><b>CHICKEN</b> кейс (1 000 000 🪙)</span><button class="buy-btn" onclick="openCase()">ВІДКРИТИ</button></div>
+<p id="caseResult" class="neon-text"></p>
+</div>
+
+<!-- INVENTORY -->
+<div id="inv" class="screen">
+<h2 class="neon-text">🎒 Рюкзак</h2>
+<div id="inv-list" class="neon-text">Порожньо</div>
+</div>
+
+<!-- PROFILE -->
+<div id="profile" class="screen">
+<h2 class="neon-text">👤 Профіль</h2>
+<p>Кліків: <span id="total-clicks" class="neon-text">0</span></p>
+<p>Витрачено: <span id="spent" class="neon-text">0</span></p>
+<p>Рівень: <span id="level-profile" class="neon-text">0</span></p>
+<button class="buy-btn" onclick="resetGame()">❌ Скинути все</button>
+<h3>💾 Сейв</h3>
+<button class="buy-btn" onclick="exportSave()">Експорт сейву</button>
+<input type="file" onchange="importSave(this.files[0])">
 </div>
 
 <script>
-Telegram.WebApp.ready();
-Telegram.WebApp.expand();
+/* ===== DATA ===== */
+let coins=0,totalClicks=0,clickPower=1,clickUpgradePrice=5000;
+let inventory=[],autoclicker=false,xp=0,level=0;
+let autoInterval=null,spent=0;
 
-const canvas = document.getElementById("wheel");
-const ctx = canvas.getContext("2d");
-const result = document.getElementById("result");
-
-const segments = [
-  {color:"#3cff00", text:"⭐️", type:"one", size:1},
-  {color:"#ff2a2a", text:"", type:"zero", size:1},
-  {color:"#3cff00", text:"⭐️", type:"one", size:1},
-  {color:"#ff2a2a", text:"", type:"zero", size:1},
-  {color:"#3cff00", text:"⭐️", type:"one", size:1},
-  {color:"#ff2a2a", text:"", type:"zero", size:1},
-  {color:"#3cff00", text:"⭐️", type:"one", size:1},
-  {color:"#ff2a2a", text:"", type:"zero", size:1},
-  {color:"#3cff00", text:"⭐️", type:"one", size:1},
-  {color:"#ff2a2a", text:"", type:"zero", size:1},
-  {color:"#dfdfdf", text:"⭐️⭐️⭐️", type:"three", size:0.5},
-];
-
-let angle = 0;
-
-function drawWheel() {
-  const cx = 170, cy = 170, r = 155;
-  const total = segments.reduce((s,a)=>s+a.size,0);
-  let a = angle;
-
-  ctx.clearRect(0,0,340,340);
-
-  // Малюємо сегменти
-  segments.forEach(s=>{
-    const slice = (s.size/total)*Math.PI*2;
-    ctx.beginPath();
-    ctx.moveTo(cx,cy);
-    ctx.arc(cx,cy,r,a,a+slice);
-    ctx.fillStyle=s.color;
-    ctx.fill();
-
-    // Текст на сегменті
-    const mid = a+slice/2;
-    ctx.save();
-    ctx.translate(cx+Math.cos(mid)*r*0.6, cy+Math.sin(mid)*r*0.6);
-    ctx.rotate(mid);
-    ctx.fillStyle="#fff";
-    ctx.font="bold 20px Arial";
-    ctx.fillText(s.text,-12,6);
-    ctx.restore();
-
-    a+=slice;
-  });
-
-  // Малюємо жовті кружечки по колу
-  const bulbs = 20; // кількість лампочок
-  for(let i=0;i<bulbs;i++){
-    const theta = (i/bulbs)*2*Math.PI + angle; // щоб кружечки обертались разом
-    const bx = cx + Math.cos(theta)*(r+15);
-    const by = cy + Math.sin(theta)*(r+15);
-    ctx.beginPath();
-    ctx.arc(bx,by,6,0,2*Math.PI);
-    ctx.fillStyle = "#ffea00";
-    ctx.shadowColor = "#ffd700";
-    ctx.shadowBlur = 8;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-  }
+/* ===== NAV ===== */
+function show(id){
+document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
 }
 
-function explode(n){
-  for(let i=0;i<n;i++){
-    const s=document.createElement("div");
-    s.className="star";
-    s.textContent="⭐️";
-    s.style.left="50%";
-    s.style.top="50%";
-    s.style.setProperty("--x",(Math.random()-.5)*300+"px");
-    s.style.setProperty("--y",(Math.random()-.5)*300+"px");
-    document.body.appendChild(s);
-    setTimeout(()=>s.remove(),1600);
-  }
+/* ===== CLICK ===== */
+function clickChicken(){
+coins+=clickPower;
+totalClicks++;
+xp++;
+if(xp>=100){xp=0;level=Math.min(level+1,20000);}
+update(); save();
 }
 
-drawWheel();
+/* ===== UPDATE UI ===== */
+function update(){
+document.getElementById("coins").innerText=coins;
+document.getElementById("total-clicks").innerText=totalClicks;
+document.getElementById("click-upgrade-price")?.innerText=clickUpgradePrice;
+document.getElementById("level-profile")?.innerText=level;
+document.getElementById("xpBar").style.width=(xp)+"%";
+document.getElementById("inv-list").innerHTML=inventory.length?inventory.join("<br>"):"Порожньо";
+}
 
-document.getElementById("spin").onclick=()=>{
-  let r=Math.random(), type="zero";
-  if(r<0.0001) type="three";
-  else if(r<0.24) type="one";
+/* ===== SHOP ===== */
+function buyItem(name,price){
+if(coins<price){alert("❌ Мало коїнів!"); return;}
+coins-=price;
+spent+=price;
+inventory.push(name);
+update(); save();
+alert("✅ Куплено: "+name);
+}
+function buyAutoclicker(){
+if(autoclicker){alert("🤖 Автоклікер вже активний!"); return;}
+if(coins<10000){alert("❌ Мало коїнів!"); return;}
+coins-=10000;
+spent+=10000;
+autoclicker=true;
+startAutoclicker();
+update(); save();
+alert("✅ Куплено Автоклікер!");
+}
+function startAutoclicker(){
+if(autoInterval) return;
+autoInterval=setInterval(()=>{coins+=clickPower; xp++; if(xp>=100){xp=0;level=Math.min(level+1,20000);} update(); save();},1000);
+}
+function upgradeClick(){
+if(coins<clickUpgradePrice){alert("❌ Мало коїнів!"); return;}
+coins-=clickUpgradePrice; spent+=clickUpgradePrice;
+clickPower++;
+clickUpgradePrice=Math.floor(clickUpgradePrice*1.5);
+update(); save();
+alert("⚡️ Клік посилено! +1");
+}
 
-  const opts=segments.map((s,i)=>({...s,i})).filter(s=>s.type===type);
-  const pick=opts[Math.floor(Math.random()*opts.length)];
+/* ===== CASE ===== */
+function openCase(){
+if(coins<1000000){alert("❌ Мало коінів!"); return;}
+coins-=1000000; spent+=1000000;
+let r=Math.random()*100;
+let reward="";
+if(r<55){reward="🔥 Вогнемет";inventory.push(reward);}
+else if(r<65){coins+=10000000;reward="💰 10 000 000";}
+else if(r<85){coins+=100000;reward="💰 100 000";}
+else if(r<95){reward="⚔️ Меч";inventory.push(reward);}
+else{coins+=80000;reward="🎫 ПРОМО S23BN";}
+document.getElementById("caseResult").innerText=reward;
+update(); save();
+}
 
-  const total=segments.reduce((s,a)=>s+a.size,0);
-  let offset=0;
-  for(let i=0;i<pick.i;i++) offset+=segments[i].size;
-  const target=(offset/total)*Math.PI*2;
+/* ===== SAVE/LOAD ===== */
+function save(){localStorage.setItem("chickenSave",JSON.stringify({coins,totalClicks,clickPower,clickUpgradePrice,inventory,autoclicker,xp,level,spent}));}
+function load(){let s=JSON.parse(localStorage.getItem("chickenSave")"{}");coins=s.coins0;totalClicks=s.totalClicks0;clickPower=s.clickPower1;clickUpgradePrice=s.clickUpgradePrice5000;inventory=s.inventory[];autoclicker=s.autoclickerfalse;xp=s.xp0;level=s.level0;spent=s.spent0;if(autoclicker)startAutoclicker();update();}
+load();
 
-  const spin=6*Math.PI+(Math.PI*2-target);
-  const start=angle;
-  const t0=performance.now();
+/* ===== RESET ===== */
+function resetGame(){if(confirm("Точно скинути ВСЕ?")){localStorage.clear(); location.reload();}}
 
-  function anim(t){
-    const p=Math.min((t-t0)/3500,1);
-    angle=start+spin*(1-Math.pow(1-p,3));
-    drawWheel();
-    if(p<1) requestAnimationFrame(anim);
-    else{
-      if(type==="three"){
-        result.textContent="💎 ⭐️⭐️⭐️ 3 ЗІРКИ!";
-        explode(30);
-      } else if(type==="one"){
-        result.textContent="🎉 ⭐️ 1 ЗІРКА";
-        explode(14);
-      } else {
-        result.textContent="😢  0 ЗІРОК";
-      }
-    }
-  }
-  requestAnimationFrame(anim);
-};
+/* ===== EXPORT/IMPORT ===== */
+function exportSave(){const blob=new Blob([localStorage.getItem("chickenSave")],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="chicken_clicker_save.json";a.click();}
+function importSave(file){const reader=new FileReader();reader.onload=()=>{localStorage.setItem("chickenSave",reader.result);load();alert("✅ Сейв імпортовано");};reader.readAsText(file);}
 </script>
+
 </body>
 </html>
